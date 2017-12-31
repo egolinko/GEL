@@ -14,8 +14,8 @@ def five_bin(x):
     return x.astype('str')
 
 
-def get_diag_index(l):
-    idx = mb[mb.Class == mb.Class.value_counts().index[l]].index
+def get_diag_index(d_, l):
+    idx = d_[d_.Class == d_.Class.value_counts().index[l]].index
     return idx
 
 
@@ -34,38 +34,38 @@ def row_feature_rep(rows_, features_):
     return Q_
 
 
-def get_upper_Fs(i):
-    ret = row_feature_rep(rows_=mb[mb.Class == class_combs.cj[i]]
+def get_upper_Fs(d_, ccm, i):
+    ret = row_feature_rep(rows_= d_[d_.Class == ccm.cj[i]]
                           .drop("Class", axis=1),
-                          features_=mb[(mb.Class == class_combs.ci[i]) | (mb.Class == class_combs.cj[i])]
+                          features_=d_[(d_.Class == ccm.ci[i]) | (d_.Class == ccm.cj[i])]
                           .drop("Class", axis=1))
     return ret
 
 
-def get_lower_Fs(i):
-    ret = row_feature_rep(rows_=mb[mb.Class == class_combs.ci[i]]
+def get_lower_Fs(d_, ccm, i):
+    ret = row_feature_rep(rows_ = d_[d_.Class == ccm.ci[i]]
                           .drop("Class", axis=1),
-                          features_=mb[(mb.Class == class_combs.ci[i]) | (mb.Class == class_combs.cj[i])]
+                          features_ = d_[(d_.Class == ccm.ci[i]) | (d_.Class == ccm.cj[i])]
                           .drop("Class", axis=1))
     return ret
 
 
-def get_diag(i):
-    ret = row_feature_rep(rows_=mb.iloc[diag_idx[i]]
+def get_diag(d_, diag_idx_, i):
+    ret = row_feature_rep(rows_ = d_.iloc[diag_idx_[i]]
                           .drop("Class", axis=1),
-                          features_=mb.iloc[diag_idx[i]]
+                          features_ = d_.iloc[diag_idx_[i]]
                           .drop("Class", axis=1))
     return ret
 
 
 def makeMat(k_, which_diag, ccm, d_, Fs, D_):
     if which_diag == 'upper':
-        l = ccm[ccm.ci == mb.Class.value_counts().index[k_]].index
+        l = ccm[ccm.ci == d_.Class.value_counts().index[k_]].index
     else:
-        l = ccm[ccm.cj == mb.Class.value_counts().index[k_]].index
+        l = ccm[ccm.cj == d_.Class.value_counts().index[k_]].index
 
     if (len(l) == 0 and which_diag == 'upper'):
-        Q_ = D_[len(m_.Class.unique()) - 1]
+        Q_ = D_[len(d_.Class.unique()) - 1]
     elif (len(l) == 0 and which_diag == 'lower'):
         Q_ = D_[0]
     else:
@@ -102,6 +102,7 @@ def cpir_gel(source_data_, k, learning_method):
         mb: one-hot data
         source_data_: original data frame
     '''
+
     if learning_method == 'supervised':
         m = source_data_.drop("Class", axis=1).apply(five_bin, axis=1)
         mb_ = pd.get_dummies(m)
@@ -118,11 +119,11 @@ def cpir_gel(source_data_, k, learning_method):
             columns=['ci', 'cj']
         )
 
-        diag_idx = map(get_diag_index, range(len(mb.Class.unique())))
+        diag_idx = map(partial(get_diag_index, mb), range(len(mb.Class.unique())))
 
-        D = map(get_diag, range(len(diag_idx)))
-        upper_Fs = map(get_upper_Fs, range(len(class_combs)))
-        lower_Fs = map(get_lower_Fs, range(len(class_combs)))
+        D = map(partial(get_diag, mb, diag_idx), range(len(diag_idx)))
+        upper_Fs = map(partial(get_upper_Fs, mb, class_combs), range(len(class_combs)))
+        lower_Fs = map(partial(get_lower_Fs, mb, class_combs), range(len(class_combs)))
 
         upper_block = np.concatenate(
             map(partial(makeMat, which_diag="upper",
@@ -154,6 +155,7 @@ def cpir_gel(source_data_, k, learning_method):
     else:
         m = source_data_.apply(five_bin, axis=1)
         mb = pd.get_dummies(m)
+
         u = row_feature_rep(rows_= mb, features_= mb)
         Q = np.matmul(u.transpose(), u)
         S_ = np.matmul(np.divide(Q, np.max(Q)), mb.as_matrix())
@@ -170,4 +172,3 @@ def cpir_gel(source_data_, k, learning_method):
         emb = np.matmul(mb.as_matrix(), v_t)
 
     return emb, v_t, mb, source_data_
-
