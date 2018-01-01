@@ -7,7 +7,7 @@ from scipy.linalg import block_diag
 def five_bin(x):
     if len(x.unique()) < 5:
         ret = x
-    elif x.dtype == "int64":
+    elif x.dtype != "object":
         ret = pd.cut(np.array(x), 5, labels=False)
     else:
         ret = x
@@ -89,7 +89,7 @@ def makeMat(k_, which_diag, ccm, d_, Fs, D_):
     return Q
 
 
-def cpir_gel(source_data_, k, learning_method):
+def cpir_gel(source_data_, k = 10, learning_method = "unsupervised", class_var = None):
     '''
 
     Args:
@@ -104,6 +104,7 @@ def cpir_gel(source_data_, k, learning_method):
     '''
 
     if learning_method == 'supervised':
+        source_data_ = source_data_.rename(columns = {class_var: "Class"})
         m = source_data_.drop("Class", axis=1).apply(five_bin, axis=1)
         mb_ = pd.get_dummies(m)
         mb_['Class'] = pd.Categorical(source_data_.Class,
@@ -171,4 +172,4 @@ def cpir_gel(source_data_, k, learning_method):
     else:
         emb = np.matmul(mb.as_matrix(), v_t)
 
-    return emb, v_t, mb, source_data_
+    return emb, v_t, mb, source_data_.rename(columns = {"Class" : class_var})
