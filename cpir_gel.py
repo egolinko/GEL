@@ -11,7 +11,7 @@ def five_bin(x):
         ret = pd.cut(np.array(x), 5, labels=False)
     else:
         ret = x
-    return x.astype('str')
+    return ret.astype('str')
 
 
 def get_diag_index(d_, l):
