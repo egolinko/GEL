@@ -4,15 +4,6 @@ import itertools
 from functools import partial
 from scipy.linalg import block_diag
 
-def five_bin(x):
-    if len(x.unique()) < 5:
-        ret = x
-    elif x.dtype != "object":
-        ret = pd.cut(np.array(x), 5, labels=False)
-    else:
-        ret = x
-    return ret.astype('str')
-
 
 def get_diag_index(d_, l):
     idx = d_[d_.Class == d_.Class.value_counts().index[l]].index
@@ -93,7 +84,7 @@ def cpir_gel(source_data_, k = 10, learning_method = "unsupervised", class_var =
     '''
 
     Args:
-        source_data_: a pandas dataframe with the class label named 'Class'
+        source_data_: a one-hot encoded dataframe
         k: number of eigenvectors to use for new embedding, if  'max' dim(source_data_) = dim(emb)
         learning_method: 'unsupervised' indicates no class label, otherwise 'supervised'
 
@@ -105,8 +96,7 @@ def cpir_gel(source_data_, k = 10, learning_method = "unsupervised", class_var =
 
     if learning_method == 'supervised':
         source_data_ = source_data_.rename(columns = {class_var: "Class"})
-        m = source_data_.drop("Class", axis=1).apply(five_bin, axis=1)
-        mb_ = pd.get_dummies(m)
+        mb_ = source_data_.drop("Class", axis = 1)
         mb_['Class'] = pd.Categorical(source_data_.Class,
                                       categories=source_data_.Class.value_counts()
                                       .keys()
@@ -154,9 +144,7 @@ def cpir_gel(source_data_, k = 10, learning_method = "unsupervised", class_var =
         U, s, V = np.linalg.svd(S_)
 
     else:
-        m = source_data_.apply(five_bin, axis=1)
-        mb = pd.get_dummies(m)
-
+        mb = source_data_
         u = row_feature_rep(rows_= mb, features_= mb)
         Q = np.matmul(u.transpose(), u)
         S_ = np.matmul(np.divide(Q, np.max(Q)), mb.as_matrix())
