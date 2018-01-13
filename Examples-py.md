@@ -1,6 +1,7 @@
 Supervised
 ```
-
+import numpy as np
+import pandas an pd 
 from sklearn.metrics import accuracy_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
@@ -10,17 +11,17 @@ dd = pd.read_csv("https://s3-us-west-2.amazonaws.com/researchs/learn_w_cat_data/
 X = pd.get_dummies(dd.drop("Class", axis = 1))
 X["Class"] = dd.Class
 
-cp = cpir_gel(source_data_ = X, k = 10, learning_method = 'supervised', class_var = "Class")
+idx = np.random.uniform(0, 1, len(X)) <= .8
 
-idx = np.random.uniform(0, 1, len(cp[0])) <= .8
+cp = cpir_gel(source_data_ = X[idx == True].reset_index().drop('index', axis = 1),
+              k = 10, learning_method = 'supervised', class_var = "Class")
 
 clf = GaussianNB()
-clf.fit(X = pd.DataFrame(cp[0][idx == True]), y = pd.factorize(cp[2].Class[idx == True])[0])
-pred = clf.predict(pd.DataFrame(np.matmul(cp[2].drop("Class", axis = 1)[idx == False], cp[1])))
+clf.fit(X = pd.DataFrame(cp[0]), y = pd.factorize(cp[2].Class)[0])
+pred = clf.predict(pd.DataFrame(np.matmul(X.drop("Class", axis = 1)[idx == False], cp[1])))
 
-pd.crosstab(cp[2].Class[idx == False], pred, rownames=['Actual'], colnames=['Predicted'])
-accuracy_score(pd.factorize(cp[2].Class[idx == False])[0], pred)
-
+pd.crosstab(X.Class[idx == False], pred, rownames=['Actual'], colnames=['Predicted'])
+accuracy_score(pd.factorize(X.Class[idx == False])[0], pred)
 ```
 
 Unsupervised
@@ -28,14 +29,15 @@ Unsupervised
 ```
 X = pd.get_dummies(dd.drop("Class", axis = 1))
 
-cp_u = cpir_gel(source_data_ = X, k = 10, learning_method = 'unsupervised')
+cp_u = cpir_gel(source_data_ = X[idx == True].reset_index().drop('index', axis = 1), 
+k = 10, learning_method = 'unsupervised')
 
 clf = RandomForestClassifier()
-clf.fit(X = pd.DataFrame(cp_u[0][idx == True]), y = pd.factorize(dd.Class[idx == True])[0])
-pred = clf.predict(pd.DataFrame(np.matmul(cp_u[2][idx == False], cp_u[1])))
+clf.fit(X = pd.DataFrame(cp[0]), y = pd.factorize(dd.Class[idx == True])[0])
+pred = clf.predict(pd.DataFrame(np.matmul(X[idx == False], cp[1])))
 
 pd.crosstab(dd.Class[idx == False], pred, rownames=['Actual'], colnames=['Predicted'])
-accuracy_score(pd.factorize(cp[2].Class[idx == False])[0], pred)
+accuracy_score(pd.factorize(dd.Class[idx == False])[0], pred)
 
 
 ```
