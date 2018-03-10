@@ -1,7 +1,7 @@
 Minimal example to use as supervised and unsupervised.
 
 ```{r}
-car <- read.csv("https://s3-us-west-2.amazonaws.com/researchs/learn_w_cat_data/car.csv")
+car <- read.csv("https://s3-us-west-2.amazonaws.com/researchs/car.csv")
 require(dplyr)
 ```
 
