@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
 
-dd = pd.read_csv("https://s3-us-west-2.amazonaws.com/researchs/car.csv")
+dd = pd.read_csv("https://s3-us-west-2.amazonaws.com/researchs/GFEL_data/car.csv")
 
 X = pd.get_dummies(dd.drop("Class", axis = 1))
 X["Class"] = dd.Class
