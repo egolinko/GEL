@@ -1,7 +1,7 @@
 Supervised
 ```
 import numpy as np
-import pandas an pd 
+import pandas as pd 
 from sklearn.metrics import accuracy_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
