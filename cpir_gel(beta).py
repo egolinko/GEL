@@ -9,7 +9,6 @@ def get_diag_index(d_, l):
     idx = d_[d_.Class == d_.Class.value_counts().index[l]].index
     return idx
 
-
 def row_feature_rep(rows_, features_):
     r_1 = rows_.mean(axis=1).as_matrix()
     f_1 = features_.mean(axis=0).as_matrix()
@@ -39,7 +38,6 @@ def get_lower_Fs(d_, ccm, i):
                           features_ = d_[(d_.Class == ccm.ci[i]) | (d_.Class == ccm.cj[i])]
                           .drop("Class", axis=1))
     return ret
-
 
 def get_diag(d_, diag_idx_, i):
     ret = row_feature_rep(rows_ = d_.iloc[diag_idx_[i]]
@@ -82,12 +80,10 @@ def makeMat(k_, which_diag, ccm, d_, Fs, D_):
 
 def cpir_gel(source_data_, k = 10, learning_method = "unsupervised", class_var = None):
     '''
-
     Args:
         source_data_: a one-hot encoded dataframe
         k: number of eigenvectors to use for new embedding, if  'max' dim(source_data_) = dim(emb)
         learning_method: 'unsupervised' indicates no class label, otherwise 'supervised'
-
     Returns:
         emb: new embedded space
         mb: one-hot data
@@ -110,23 +106,25 @@ def cpir_gel(source_data_, k = 10, learning_method = "unsupervised", class_var =
             columns=['ci', 'cj']
         )
 
-        diag_idx = map(partial(get_diag_index, mb), range(len(mb.Class.unique())))
+        # diag_idx = map(partial(get_diag_index, mb), range(len(mb.Class.unique())))
+        diag_idx = [get_diag_index(mb, l) for l in range(len(mb.Class.unique()))]
 
-        D = map(partial(get_diag, mb, diag_idx), range(len(diag_idx)))
-        upper_Fs = map(partial(get_upper_Fs, mb, class_combs), range(len(class_combs)))
-        lower_Fs = map(partial(get_lower_Fs, mb, class_combs), range(len(class_combs)))
+        D = [get_diag(mb, diag_idx, x) for x in range(len(mb.Class.unique()))]
+        upper_Fs = [get_upper_Fs(mb, class_combs, x) for x in range(len(class_combs))]
+        lower_Fs = [get_lower_Fs(mb, class_combs, x) for x in range(len(class_combs))]
 
         upper_block = np.concatenate(
-            map(partial(makeMat, which_diag="upper",
+            list(map(partial(makeMat, which_diag="upper",
                         ccm=class_combs,
                         d_=mb, Fs=upper_Fs, D_=D),
                 range(len(diag_idx))))
+        )
 
         lower_block = np.concatenate(
-            map(partial(makeMat, which_diag="lower",
+            list(map(partial(makeMat, which_diag="lower",
                         ccm=class_combs,
                         d_=mb, Fs=lower_Fs, D_=D),
-                range(len(diag_idx))))
+                range(len(diag_idx)))))
 
         b = block_diag(*map(lambda x: np.full(D[x].shape, .5),
                             range(len(D))))
