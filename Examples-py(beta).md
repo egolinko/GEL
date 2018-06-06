@@ -1,4 +1,5 @@
-Supervised
+## Supervised
+
 ```
 import numpy as np
 import pandas as pd 
@@ -22,22 +23,4 @@ pred = clf.predict(pd.DataFrame(np.matmul(X.drop("Class", axis = 1)[idx == False
 
 pd.crosstab(X.Class[idx == False], pred, rownames=['Actual'], colnames=['Predicted'])
 accuracy_score(pd.factorize(X.Class[idx == False])[0], pred)
-```
-
-Unsupervised
-
-```
-X = pd.get_dummies(dd.drop("Class", axis = 1))
-
-cp_u = cpir_gel(source_data_ = X[idx == True].reset_index().drop('index', axis = 1), 
-k = 10, learning_method = 'unsupervised')
-
-clf = RandomForestClassifier()
-clf.fit(X = pd.DataFrame(cp[0]), y = pd.factorize(dd.Class[idx == True])[0])
-pred = clf.predict(pd.DataFrame(np.matmul(X[idx == False], cp[1])))
-
-pd.crosstab(dd.Class[idx == False], pred, rownames=['Actual'], colnames=['Predicted'])
-accuracy_score(pd.factorize(dd.Class[idx == False])[0], pred)
-
-
 ```
